@@ -1,0 +1,15 @@
+{
+  "SchemaVersion": 1,
+  "Name": "Mt3620AzureIoTHubSample",
+  "ComponentId": "e7cb6dc9-1d66-4e0d-baa0-3f7eceb0b4b2",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "TargetApplicationRuntimeVersion": 1,
+  "Capabilities": {
+    "AllowedConnections": [ "global.azure-devices-provisioning.net", "SphereDevelopment.azure-devices.net" ],
+    "Gpio": [ 8, 9, 10, 15, 16, 17, 18, 19, 20, 12, 13 ],
+    "Uart": [],
+    "WifiConfig": true,
+    "DeviceAuthentication": "93ebfc52-547e-4e96-a910-d249ff30a7b4"
+  }
+}

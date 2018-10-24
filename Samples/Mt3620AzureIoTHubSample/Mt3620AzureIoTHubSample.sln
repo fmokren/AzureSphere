@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mt3620AzureIoTHubSample", "Mt3620AzureIoTHubSample\Mt3620AzureIoTHubSample.vcxproj", "{D1B9370A-7B04-4D56-986F-65F5AC283BEC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D1B9370A-7B04-4D56-986F-65F5AC283BEC}.Debug|ARM.ActiveCfg = Debug|ARM
+		{D1B9370A-7B04-4D56-986F-65F5AC283BEC}.Debug|ARM.Build.0 = Debug|ARM
+		{D1B9370A-7B04-4D56-986F-65F5AC283BEC}.Release|ARM.ActiveCfg = Release|ARM
+		{D1B9370A-7B04-4D56-986F-65F5AC283BEC}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FFC75615-A9F7-4D89-9B2D-13D3E27E982C}
+	EndGlobalSection
+EndGlobal
