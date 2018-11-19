@@ -36,11 +36,6 @@ static int epollFd = -1;
 
 static struct dht11 tempSensor;
 
-#ifdef DEBUG_GPIO
-static int gpioDebug = -1;
-static GPIO_Value_Type gpioDebugValue = GPIO_Value_High;
-#endif
-
 // Button state variables
 static GPIO_Value_Type buttonState = GPIO_Value_High;
 static GPIO_Value_Type ledState = GPIO_Value_High;
@@ -172,18 +167,6 @@ static int InitPeripheralsAndHandlers(void)
         return -1;
     }
 
-#ifdef DEBUG_GPIO
-    // Open GPIO 1 for temp sensor
-    Log_Debug("Opening DEBUG_GPIO as an output\n");
-    gpioDebug = GPIO_OpenAsOutput(DEBUG_GPIO, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (gpioDebug < 0)
-    {
-        Log_Debug("ERROR: Could not open GPIO 0: %s (%d).\n", strerror(errno), errno);
-        return -1;
-    }
-
-    GPIO_SetValue(gpioDebug, gpioDebugValue);
-#endif
     return 0;
 }
 

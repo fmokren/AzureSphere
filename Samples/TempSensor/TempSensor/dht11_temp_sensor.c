@@ -5,6 +5,14 @@
 #include <time.h>
 #include <unistd.h>
 
+// Uncomment to enable a debug GPIO output pin that toggles on every observed transition
+//#define DEBUG_GPIO ((GPIO_Id)4)
+
+#ifdef DEBUG_GPIO
+static int gpioDebug = -1;
+static GPIO_Value_Type gpioDebugValue = GPIO_Value_High;
+#endif
+
 int InitDht11(struct dht11 *desc, GPIO_Id dataId)
 {
     Log_Debug("Opening %d as DHT11 data pin\n", dataId);
@@ -18,6 +26,20 @@ int InitDht11(struct dht11 *desc, GPIO_Id dataId)
 
     desc->id = dataId;
     desc->gpioFd = fd;
+
+#ifdef DEBUG_GPIO
+    // Open GPIO for debug output
+    Log_Debug("Opening DEBUG_GPIO as an output\n");
+    gpioDebug = GPIO_OpenAsOutput(DEBUG_GPIO, GPIO_OutputMode_PushPull, GPIO_Value_High);
+    if (gpioDebug < 0)
+    {
+        Log_Debug("ERROR: Could not open GPIO 0: %s (%d).\n", strerror(errno), errno);
+        return -1;
+    }
+
+    GPIO_SetValue(gpioDebug, gpioDebugValue);
+#endif
+
     return 0;
 }
 
@@ -38,7 +60,7 @@ int InternalMeasure(struct dht11 *desc, struct measurement *sample)
 
     clock_t bitThreshold = .00004 * CLOCKS_PER_SEC;
 
-    // Add the time you want to sleep
+    // Need to hold the pin low for > 18msec
     deadline.tv_nsec = 18.1 * 1000 * 1000;
 
     int hiCount = 0;
@@ -203,13 +225,13 @@ int Measure(struct dht11 *desc, struct measurement *sample)
     // Try five times to get a successful measurment.
     for (int i = 0; i < 5; i++)
     {
-        struct timespec deadline;
-        memset(&deadline, 0, sizeof(deadline));
+        struct timespec sleeptime;
+        memset(&sleeptime, 0, sizeof(sleeptime));
 
-        // Add the time you want to sleep
-        deadline.tv_nsec = 500 * 1000 * 1000;
+        // Sleep about 500ms between samples.
+        sleeptime.tv_nsec = 500 * 1000 * 1000;
 
-        clock_nanosleep(CLOCK_REALTIME, 0, &deadline, NULL);
+        clock_nanosleep(CLOCK_REALTIME, 0, &sleeptime, NULL);
         
         if (InternalMeasure(desc, sample) > 0)
         {
