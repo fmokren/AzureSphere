@@ -15,6 +15,9 @@
 
 #include "mt3620_rdb.h"
 
+// Uncomment to enable a debug GPIO output pin that toggles on every observed transition
+//#define DEBUG_GPIO MT3620_RDB_HEADER1_PIN6_GPIO
+
 // This sample C application for the MT3620 Reference Development Board (Azure Sphere)
 // blinks an LED.
 // The blink rate can be changed through a button press.
@@ -31,6 +34,11 @@ static int gpioLedTimerFd = -1;
 static int epollFd = -1;
 
 static int gpioTemp0 = -1;
+
+#ifdef DEBUG_GPIO
+static int gpioDebug = -1;
+static GPIO_Value_Type gpioDebugValue = GPIO_Value_High;
+#endif
 
 // Button state variables
 static GPIO_Value_Type buttonState = GPIO_Value_High;
@@ -100,9 +108,9 @@ static void ButtonTimerEventHandler()
     if (newButtonState != buttonState) {
         if (newButtonState == GPIO_Value_Low) {
             blinkIntervalIndex = (blinkIntervalIndex + 1) % numBlinkIntervals;
-            if (SetTimerFdInterval(gpioLedTimerFd, &blinkIntervals[blinkIntervalIndex]) != 0) {
+            /*if (SetTimerFdInterval(gpioLedTimerFd, &blinkIntervals[blinkIntervalIndex]) != 0) {
                 terminationRequired = true;
-            }
+            }*/
 
             struct timespec deadline;
             memset(&deadline, 0, sizeof(deadline));
@@ -144,11 +152,7 @@ static void ButtonTimerEventHandler()
             GPIO_Value_Type sample;
             GPIO_Value_Type lastSample;
             uint64_t data = 0;
-
-            do
-            {
-                GPIO_GetValue(gpioTemp0, &sample);
-            } while (sample == GPIO_Value_High);
+            clock_t startHigh;
 
             lastSample = sample;
 
@@ -157,6 +161,7 @@ static void ButtonTimerEventHandler()
             while (bitCount < 41)
             {
                 result = GPIO_GetValue(gpioTemp0, &sample);
+                
                 if (result != 0)
                 {
                     Log_Debug("ERROR: Could not read GPIO 0 as input %s (%d).\n", strerror(errno), errno);
@@ -166,29 +171,17 @@ static void ButtonTimerEventHandler()
 
                 if (sample == GPIO_Value_Low)
                 {
-                    // If hiCount isn't 0 then this is a transition from hi to low.
-                    // Measure the number of hi samples and determine if the bit is a 1 or a 0.
-                    // Five or more hi samples will be considered a 1. Four or less will be considered a 0.
-                    if (hiCount > 0)
+                    // last sample was high so a bit has been "received".
+                    if (lastSample != sample)
                     {
-                        // First bit must be a 1
-                        if (bitCount == 0)
-                        {
-                            if (hiCount < 21)
-                            {
-                                Log_Debug("First bit detected is a 0. Expecting 1 to start a read sequence. %d\n", hiCount);
-                                success = false;
-                                break;
-                            }
+                        clock_t endSample = clock();
 
-                            bitCount++;
-                            hiCount = 0;
-                            continue;
-                        }
 
-                        if (hiCount > 20)
+                        clock_t sampleDuration = endSample - startHigh;
+
+                        if (sampleDuration >= bitThreshold)
                         {
-                            // Detected a 1 bit
+                            // detected a 1 bit
                             data <<= 1;
                             data |= 1;
                         }
@@ -199,12 +192,27 @@ static void ButtonTimerEventHandler()
                         }
 
                         bitCount++;
+
+#ifdef DEBUG_GPIO
+                        gpioDebugValue = gpioDebugValue == GPIO_Value_High ? GPIO_Value_Low : GPIO_Value_High;
+                        GPIO_SetValue(gpioDebug, gpioDebugValue);
+#endif
                     }
 
+                    // Reset high count
                     hiCount = 0;
                 }
                 else
                 {
+                    // Last sample was a low
+                    if (lastSample != sample)
+                    {
+                        startHigh = clock();
+#ifdef DEBUG_GPIO
+                        gpioDebugValue = gpioDebugValue == GPIO_Value_High ? GPIO_Value_Low : GPIO_Value_High;
+                        GPIO_SetValue(gpioDebug, gpioDebugValue);
+#endif
+                    }
                     hiCount++;
                     if (hiCount > 10000)
                     {
@@ -213,21 +221,31 @@ static void ButtonTimerEventHandler()
                         break;
                     }
                 }
+
+                lastSample = sample;
             }
 
             if (success)
             {
                 Log_Debug("Data 0x%016llx\n", data);
                 uint8_t checksum = data & 0xff;
-                data >>= 16;
+                data >>= 8;
+
+                uint8_t tempLow = data & 0xff;
+
+                data >>= 8;
 
                 uint8_t temp = data & 0xff;
 
-                data >>= 16;
+                data >>= 8;
+
+                uint8_t humidLow = data & 0xff;
+
+                data >>= 8;
 
                 uint8_t humidity = data & 0xff;
 
-                uint8_t mySum = temp + humidity;
+                uint8_t mySum = temp + tempLow + humidity + humidLow;
 
                 if (checksum == mySum)
                 {
@@ -289,12 +307,13 @@ static int InitPeripheralsAndHandlers(void)
         Log_Debug("ERROR: Could not open LED GPIO: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
+    /*
     gpioLedTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &blinkIntervals[blinkIntervalIndex],
                                                 &LedTimerEventHandler, EPOLLIN);
     if (gpioLedTimerFd < 0) {
         return -1;
     }
-
+    */
     // Open GPIO 0 for temp sensor
     Log_Debug("Opening MT3620_RDB_HEADER1_PIN4_GPIO as an output\n");
     gpioTemp0 = GPIO_OpenAsOutput(MT3620_RDB_HEADER1_PIN4_GPIO, GPIO_OutputMode_PushPull, GPIO_Value_High);
@@ -303,6 +322,19 @@ static int InitPeripheralsAndHandlers(void)
         Log_Debug("ERROR: Could not open GPIO 0: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
+
+#ifdef DEBUG_GPIO
+    // Open GPIO 1 for temp sensor
+    Log_Debug("Opening DEBUG_GPIO as an output\n");
+    gpioDebug = GPIO_OpenAsOutput(DEBUG_GPIO, GPIO_OutputMode_PushPull, GPIO_Value_High);
+    if (gpioDebug < 0)
+    {
+        Log_Debug("ERROR: Could not open GPIO 0: %s (%d).\n", strerror(errno), errno);
+        return -1;
+    }
+
+    GPIO_SetValue(gpioDebug, gpioDebugValue);
+#endif
     return 0;
 }
 

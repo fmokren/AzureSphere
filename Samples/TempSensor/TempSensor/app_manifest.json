@@ -7,7 +7,7 @@
   "TargetApplicationRuntimeVersion": 1,
   "Capabilities": {
     "AllowedConnections": [],
-    "Gpio": [0, 8, 9, 10, 12 ],
+    "Gpio": [0, 1, 8, 9, 10, 12 ],
     "Uart": [],
     "WifiConfig": false
   }
