@@ -9,6 +9,7 @@
 // applibs_versions.h defines the API struct versions to use for applibs APIs.
 #include "applibs_versions.h"
 #include "epoll_timerfd_utilities.h"
+#include "dht11_temp_sensor.h"
 
 #include <applibs/gpio.h>
 #include <applibs/log.h>
@@ -33,7 +34,7 @@ static int gpioLedFd = -1;
 static int gpioLedTimerFd = -1;
 static int epollFd = -1;
 
-static int gpioTemp0 = -1;
+static struct dht11 tempSensor;
 
 #ifdef DEBUG_GPIO
 static int gpioDebug = -1;
@@ -112,159 +113,8 @@ static void ButtonTimerEventHandler()
                 terminationRequired = true;
             }*/
 
-            struct timespec deadline;
-            memset(&deadline, 0, sizeof(deadline));
-
-            clock_t bitThreshold = .00004 * CLOCKS_PER_SEC;
-
-            // Add the time you want to sleep
-            deadline.tv_nsec = 18.1 * 1000 * 1000;
-
-            int hiCount = 0;
-
-            // Set GPIO temp to 0 for >18ms
-            result = GPIO_SetValue(gpioTemp0, GPIO_Value_Low);
-            if (result != 0)
-            {
-                Log_Debug("ERROR: Could not set TEMP 0 output value: %s (%d).\n", strerror(errno), errno);
-                terminationRequired = true;
-            }
-
-            clock_nanosleep(CLOCK_REALTIME, 0, &deadline, NULL);
-
-            result = GPIO_SetValue(gpioTemp0, GPIO_Value_High);
-            if (result != 0)
-            {
-                Log_Debug("ERROR: Could not set TEMP 0 output value: %s (%d).\n", strerror(errno), errno);
-                terminationRequired = true;
-            }
-
-            CloseFdAndPrintError(gpioTemp0, "Temp 0");
-            
-            gpioTemp0 = GPIO_OpenAsInput(MT3620_RDB_HEADER1_PIN4_GPIO);
-            if (gpioTemp0 < 0)
-            {
-                Log_Debug("ERROR: Could not open GPIO 0 as input: %s (%d).\n", strerror(errno), errno);
-                terminationRequired = true;
-            }
-
-            int bitCount = 0;
-            GPIO_Value_Type sample;
-            GPIO_Value_Type lastSample;
-            uint64_t data = 0;
-            clock_t startHigh;
-
-            lastSample = sample;
-
-            hiCount = 0;
-            bool success = true;
-            while (bitCount < 41)
-            {
-                result = GPIO_GetValue(gpioTemp0, &sample);
-                
-                if (result != 0)
-                {
-                    Log_Debug("ERROR: Could not read GPIO 0 as input %s (%d).\n", strerror(errno), errno);
-                    success = false;
-                    break;
-                }
-
-                if (sample == GPIO_Value_Low)
-                {
-                    // last sample was high so a bit has been "received".
-                    if (lastSample != sample)
-                    {
-                        clock_t endSample = clock();
-
-
-                        clock_t sampleDuration = endSample - startHigh;
-
-                        if (sampleDuration >= bitThreshold)
-                        {
-                            // detected a 1 bit
-                            data <<= 1;
-                            data |= 1;
-                        }
-                        else
-                        {
-                            // Detected a 0 bit
-                            data <<= 1;
-                        }
-
-                        bitCount++;
-
-#ifdef DEBUG_GPIO
-                        gpioDebugValue = gpioDebugValue == GPIO_Value_High ? GPIO_Value_Low : GPIO_Value_High;
-                        GPIO_SetValue(gpioDebug, gpioDebugValue);
-#endif
-                    }
-
-                    // Reset high count
-                    hiCount = 0;
-                }
-                else
-                {
-                    // Last sample was a low
-                    if (lastSample != sample)
-                    {
-                        startHigh = clock();
-#ifdef DEBUG_GPIO
-                        gpioDebugValue = gpioDebugValue == GPIO_Value_High ? GPIO_Value_Low : GPIO_Value_High;
-                        GPIO_SetValue(gpioDebug, gpioDebugValue);
-#endif
-                    }
-                    hiCount++;
-                    if (hiCount > 10000)
-                    {
-                        Log_Debug("Hi count exceeded threshold\n");
-                        success = false;
-                        break;
-                    }
-                }
-
-                lastSample = sample;
-            }
-
-            if (success)
-            {
-                Log_Debug("Data 0x%016llx\n", data);
-                uint8_t checksum = data & 0xff;
-                data >>= 8;
-
-                uint8_t tempLow = data & 0xff;
-
-                data >>= 8;
-
-                uint8_t temp = data & 0xff;
-
-                data >>= 8;
-
-                uint8_t humidLow = data & 0xff;
-
-                data >>= 8;
-
-                uint8_t humidity = data & 0xff;
-
-                uint8_t mySum = temp + tempLow + humidity + humidLow;
-
-                if (checksum == mySum)
-                {
-                    Log_Debug("Temp: %d\nHumidity: %d\n", temp, humidity);
-                }
-                else
-                {
-                    Log_Debug("Check sum doesn't match 0x%02x vs 0x%02x\n", checksum, mySum);
-                }
-            }
-
-            CloseFdAndPrintError(gpioTemp0, "Temp 0");
-
-            gpioTemp0 = GPIO_OpenAsOutput(MT3620_RDB_HEADER1_PIN4_GPIO, GPIO_OutputMode_PushPull, GPIO_Value_High);
-            if (gpioTemp0 < 0)
-            {
-                Log_Debug("ERROR: Could not open GPIO 0 as output: %s (%d).\n", strerror(errno), errno);
-                terminationRequired = true;
-            }
+            struct measurement sample;
+            Measure(&tempSensor, &sample);
         }
         buttonState = newButtonState;
     }
@@ -315,9 +165,8 @@ static int InitPeripheralsAndHandlers(void)
     }
     */
     // Open GPIO 0 for temp sensor
-    Log_Debug("Opening MT3620_RDB_HEADER1_PIN4_GPIO as an output\n");
-    gpioTemp0 = GPIO_OpenAsOutput(MT3620_RDB_HEADER1_PIN4_GPIO, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (gpioTemp0 < 0)
+    int result = InitDht11(&tempSensor, MT3620_RDB_HEADER1_PIN4_GPIO);
+    if (result < 0)
     {
         Log_Debug("ERROR: Could not open GPIO 0: %s (%d).\n", strerror(errno), errno);
         return -1;

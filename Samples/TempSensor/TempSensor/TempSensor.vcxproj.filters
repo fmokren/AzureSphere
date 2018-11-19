@@ -28,10 +28,16 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <UpToDateCheckInput Include="app_manifest.json" />
-  </ItemGroup>  
+    <ClCompile Include="dht11_temp_sensor.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
   <ItemGroup>
-    <Image Include="Icon.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
+    <ClInclude Include="epoll_timerfd_utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dht11_temp_sensor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

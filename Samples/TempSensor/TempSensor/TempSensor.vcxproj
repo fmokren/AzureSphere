@@ -39,8 +39,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="dht11_temp_sensor.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="epoll_timerfd_utilities.c" />
+    <ClInclude Include="dht11_temp_sensor.h" />
     <ClInclude Include="epoll_timerfd_utilities.h" />
     <UpToDateCheckInput Include="app_manifest.json" />
     <ClInclude Include="mt3620_rdb.h" />
