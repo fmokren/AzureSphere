@@ -16,19 +16,8 @@ struct dht11
     GPIO_Id id;
 };
 
-struct grove_dht11
-{
-    int gpioFd;
-    int gpioFd_Pwr;
-    int gpioFd_Gnd;
-};
-
 int InitDht11( struct dht11 *, GPIO_Id );
-
-int InitGroveDht11(struct grove_dht11 *, GPIO_Id, GPIO_Id, GPIO_Id);
 
 int Measure(struct dht11 *, struct measurement *);
 
 void DeinitDht11(struct dht11 *);
-
-void DeinitGroveDht11(struct grove_dht11 *);

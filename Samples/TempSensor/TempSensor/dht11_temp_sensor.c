@@ -21,14 +21,6 @@ int InitDht11(struct dht11 *desc, GPIO_Id dataId)
     return 0;
 }
 
-int InitGroveDht11(struct grove_dht11 *desc, GPIO_Id dataId, GPIO_Id pwrId, GPIO_Id gndId)
-{
-    memset(desc, 0, sizeof(*desc));
-    InitDht11((struct dht11*)desc, dataId);
-
-    return -1;
-}
-
 void CloseFdAndPrintError2(int fd, const char *fdName)
 {
     if (fd >= 0) {
@@ -231,13 +223,5 @@ int Measure(struct dht11 *desc, struct measurement *sample)
 void DeinitDht11(struct dht11 *desc)
 {
     CloseFdAndPrintError2(desc->gpioFd, "DHT11 data pin");
-    memset(desc, 0, sizeof(*desc));
-}
-
-void DeinitGroveDht11(struct grove_dht11 *desc)
-{
-    DeinitDht11((struct dht11*)desc);
-    CloseFdAndPrintError2(desc->gpioFd_Gnd, "Grove DHT11 ground pin");
-    CloseFdAndPrintError2(desc->gpioFd_Pwr, "Grove DHT11 power pin");
     memset(desc, 0, sizeof(*desc));
 }
