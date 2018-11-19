@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2046
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TempSensor", "TempSensor\TempSensor.vcxproj", "{0FF8035B-7B51-4DCA-A28C-E33893C9C1CF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0FF8035B-7B51-4DCA-A28C-E33893C9C1CF}.Debug|ARM.ActiveCfg = Debug|ARM
+		{0FF8035B-7B51-4DCA-A28C-E33893C9C1CF}.Debug|ARM.Build.0 = Debug|ARM
+		{0FF8035B-7B51-4DCA-A28C-E33893C9C1CF}.Release|ARM.ActiveCfg = Release|ARM
+		{0FF8035B-7B51-4DCA-A28C-E33893C9C1CF}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2B4A1D12-896D-4ADC-8775-D83055AA9003}
+	EndGlobalSection
+EndGlobal

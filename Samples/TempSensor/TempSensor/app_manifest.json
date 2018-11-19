@@ -1,0 +1,14 @@
+{
+  "SchemaVersion": 1,
+  "Name" : "TempSensor",
+  "ComponentId" : "8e462c23-cf62-44f6-9ea2-d4c31d445f1c",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "TargetApplicationRuntimeVersion": 1,
+  "Capabilities": {
+    "AllowedConnections": [],
+    "Gpio": [0, 8, 9, 10, 12 ],
+    "Uart": [],
+    "WifiConfig": false
+  }
+}
