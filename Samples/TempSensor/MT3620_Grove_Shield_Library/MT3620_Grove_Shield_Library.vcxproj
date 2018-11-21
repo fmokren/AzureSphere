@@ -16,7 +16,7 @@
     <ClCompile Include="HAL\GroveShield.c" />
     <ClCompile Include="HAL\GroveUART.c" />
     <ClCompile Include="parson.c" />
-    <ClCompile Include="Sensors\GroveTempHumiSHT31.c" />
+    <ClCompile Include="Sensors\GroveLcdRgbBacklight.c" />
     <ClCompile Include="timer_utility.c" />
   </ItemGroup>
   <ItemGroup>
@@ -28,7 +28,7 @@
     <ClInclude Include="HAL\GroveUART.h" />
     <ClInclude Include="mt3620_rdb.h" />
     <ClInclude Include="parson.h" />
-    <ClInclude Include="Sensors\GroveTempHumiSHT31.h" />
+    <ClInclude Include="Sensors\GroveLcdRgbBacklight.h" />
     <ClInclude Include="timer_utility.h" />
   </ItemGroup>
   <ItemGroup>

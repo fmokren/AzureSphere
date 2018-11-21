@@ -23,11 +23,11 @@
     <ClCompile Include="HAL\GroveShield.c">
       <Filter>HAL</Filter>
     </ClCompile>
-    <ClCompile Include="Sensors\GroveTempHumiSHT31.c">
-      <Filter>Sensors</Filter>
-    </ClCompile>
     <ClCompile Include="Common\Delay.c">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensors\GroveLcdRgbBacklight.c">
+      <Filter>Sensors</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -45,11 +45,11 @@
     <ClInclude Include="HAL\GroveShield.h">
       <Filter>HAL</Filter>
     </ClInclude>
-    <ClInclude Include="Sensors\GroveTempHumiSHT31.h">
-      <Filter>Sensors</Filter>
-    </ClInclude>
     <ClInclude Include="Common\Delay.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Sensors\GroveLcdRgbBacklight.h">
+      <Filter>Sensors</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
