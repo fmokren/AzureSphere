@@ -1,13 +1,14 @@
-#include "GroveLcdRgbBacklight.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
 #include "../HAL/GroveI2C.h"
 #include "../Common/Delay.h"
+#include "GroveLcdRgbBacklight.h"
 
-#define RGBADDR 0x62
-#define TXTADDR 0x3E
+#define RGBADDR 0xC4
+#define TXTADDR 0x7C
 
 #define RED_CMD 4
 #define GRN_CMD 3
@@ -41,6 +42,16 @@ void* GroveLcdRgbBacklight_Open(int i2cFd)
 
 	this->I2cFd = i2cFd;
 
+    // The next two commands initialize the backlight display
+    uint8_t command_4[4] = { 0, 0, 1, 0 };
+
+    SendCommand(this, RGBADDR, command_4, 4);
+
+    uint8_t command_5[2] = { DISP_ON_CMD, 0xaa };
+
+    SendCommand(this, RGBADDR, command_5, 2);
+
+    // The next three commands initialize the text display
     uint8_t command_1[2] = { TEXT_CMD, (DISP_ON_CMD | NOCURSOR_CMD) };
 
     SendCommand(this, TXTADDR, command_1, 2);
@@ -49,10 +60,31 @@ void* GroveLcdRgbBacklight_Open(int i2cFd)
 
     SendCommand(this, TXTADDR, command_2, 2);
 
-    uint8_t command_3[2] = { TEXT_CMD, CLEAR_CMD };
-
-    SendCommand(this, TXTADDR, command_3, 2);
+    GroveLcdRgbBacklight_ClearDisplay(this);
 
 	return this;
 }
 
+void GroveLcdRgbBacklight_ClearDisplay(void *this)
+{
+    uint8_t command_3[2] = { TEXT_CMD, CLEAR_CMD };
+
+    SendCommand(this, TXTADDR, command_3, 2);
+}
+
+void GroveLcdRgbBacklight_SetBacklightRgb(void *this, uint8_t red, uint8_t green, uint8_t blue)
+{
+    uint8_t command[2] = { RED_CMD, red };
+
+    SendCommand(this, RGBADDR, command, 2);
+
+    command[0] = GRN_CMD;
+    command[1] = green;
+
+    SendCommand(this, RGBADDR, command, 2);
+
+    command[0] = BLU_CMD;
+    command[1] = blue;
+
+    SendCommand(this, RGBADDR, command, 2);
+}

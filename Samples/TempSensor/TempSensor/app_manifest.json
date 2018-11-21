@@ -8,7 +8,7 @@
   "Capabilities": {
     "AllowedConnections": [],
     "Gpio": [0, 4, 8, 9, 10, 12 ],
-    "Uart": [],
+    "Uart": [ "ISU0", "ISU3" ],
     "WifiConfig": false
   }
 }

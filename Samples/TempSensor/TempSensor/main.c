@@ -6,6 +6,9 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <Hal\GroveShield.h>
+#include <sensors\GroveLcdRgbBacklight.h>
+
 // applibs_versions.h defines the API struct versions to use for applibs APIs.
 #include "applibs_versions.h"
 #include "epoll_timerfd_utilities.h"
@@ -75,9 +78,6 @@ static void LedTimerEventHandler()
         Log_Debug("ERROR: Could not set LED output value: %s (%d).\n", strerror(errno), errno);
         terminationRequired = true;
     }
-
-    
-
 }
 
 /// <summary>
@@ -166,6 +166,11 @@ static int InitPeripheralsAndHandlers(void)
         Log_Debug("ERROR: Could not open GPIO 0: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
+
+    int groveFd;
+    GroveShield_Initialize(&groveFd, 115200);
+    void *lcd = GroveLcdRgbBacklight_Open(groveFd);
+    GroveLcdRgbBacklight_SetBacklightRgb(lcd, 30, 156, 142);
 
     return 0;
 }

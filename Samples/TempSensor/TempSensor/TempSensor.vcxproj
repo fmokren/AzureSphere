@@ -36,6 +36,8 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <IncludePath>C:\Users\Frederic\source\repos\AzureSphere\Samples\TempSensor\MT3620_Grove_Shield_Library;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
   </PropertyGroup>
@@ -48,6 +50,11 @@
     <UpToDateCheckInput Include="app_manifest.json" />
     <ClInclude Include="mt3620_rdb.h" />
     <ClInclude Include="applibs_versions.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MT3620_Grove_Shield_Library\MT3620_Grove_Shield_Library.vcxproj">
+      <Project>{a4f0a16d-b28d-4249-9b0a-eeec5090f21d}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
